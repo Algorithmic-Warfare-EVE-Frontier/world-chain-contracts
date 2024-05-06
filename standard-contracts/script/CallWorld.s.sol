@@ -8,7 +8,9 @@ import { EIP712 } from "openzeppelin-contracts/utils/cryptography/EIP712.sol";
 import { Nonces } from "openzeppelin-contracts/utils/Nonces.sol";
 import { RESOURCE_NAMESPACE, RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
+import { IWorldCall } from "@latticexyz/world/src/IWorldKernel.sol";
 
+import { ISmartCharacter } from "@eve/frontier-world/src/modules/smart-character/interfaces/ISmartCharacter.sol";
 import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, SMART_CHARACTER_SYSTEM_NAME } from "@eve/common-constants/src/constants.sol";
 import { ERC2771Forwarder } from "../src/metatx/ERC2771ForwarderWithHashNonce.sol";
 import { EntityRecordData, SmartObjectData, WorldPosition, Coord } from "./types.sol";
@@ -40,9 +42,9 @@ contract CallWorld is Script {
 
     _signerPrivatekey = 0xA11CE;
     _signer = vm.addr(_signerPrivatekey);
-    uint256 nonce = uint256(keccak256(abi.encodePacked("abc")));
+    uint256 nonce = uint256(keccak256(abi.encodePacked("a")));
 
-    uint256 characterId = 12563;
+    uint256 characterId = 12345;
     // The address this character will be minted to
     address characterAddress = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
 
@@ -52,7 +54,7 @@ contract CallWorld is Script {
     string memory cid = "azerty";
     string memory characterName = "awesome-o";
     bytes memory data = abi.encodeWithSelector(
-      0x777dd579,
+      ISmartCharacter.createCharacter.selector,
       characterId,
       characterAddress,
       EntityRecordTableData({ typeId: typeId, itemId: itemId, volume: volume }),
@@ -60,7 +62,7 @@ contract CallWorld is Script {
       cid
     );
     ResourceId systemId = smartCharacterSystemId();
-    bytes memory callData = abi.encodeWithSelector(0x894ecc58, _signer, systemId, data);
+    bytes memory callData = abi.encodeWithSelector(IWorldCall.callFrom.selector, _signer, systemId, data);
 
     ERC2771Forwarder.ForwardRequest memory req = ERC2771Forwarder.ForwardRequest({
       from: _signer,

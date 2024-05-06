@@ -19,7 +19,7 @@ contract DelegateNamespace is Script {
   function run(address worldAddress) external {
     StoreSwitch.setStoreAddress(worldAddress);
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-    address delegatee = vm.envAddress("DELEGATEE_ADDRESS");
+    address delegatee = vm.envAddress("FORWARDER_ADDRESS");
 
     ResourceId NAMESPACE_ID = ResourceId.wrap(bytes32(abi.encodePacked(RESOURCE_NAMESPACE, DEPLOYMENT_NAMESPACE)));
 

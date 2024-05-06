@@ -82,6 +82,10 @@ echo "==================== Deploying Frontier world modules ====================
 pnpm nx deploy @eve/frontier-world --worldAddress '${WORLD_ADDRESS}'
 
 
+echo "==================== Delegate access to Forwarder Contract ===================="
+pnpm nx delegateNamespaceAccess @eve/frontier-world-core
+
+
 echo "World address: $WORLD_ADDRESS"
 echo "Trusted forwarder address: $FORWARDER_ADDRESS" 
 

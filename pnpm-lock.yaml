@@ -274,6 +274,9 @@ importers:
       '@eve/frontier-world':
         specifier: 0.0.0
         version: link:../mud-contracts/frontier-world
+      '@latticexyz/schema-type':
+        specifier: 2.0.0-next.16
+        version: 2.0.0-next.16(typescript@5.4.5)(zod@3.22.4)
       '@latticexyz/store':
         specifier: 2.0.0-next.16
         version: 2.0.0-next.16
