@@ -9,6 +9,7 @@ import { SmartObjectData } from "@eve/frontier-world/src/modules/smart-character
 import { EntityRecordTableData } from "@eve/frontier-world/src/codegen/tables/EntityRecordTable.sol";
 import { SmartCharacterLib } from "@eve/frontier-world/src/modules/smart-character/SmartCharacterLib.sol";
 import { EntityRecordOffchainTableData } from "@eve/frontier-world/src/codegen/tables/EntityRecordOffchainTable.sol";
+import { ISmartCharacter } from "@eve/frontier-world/src/modules/smart-character/interfaces/ISmartCharacter.sol";
 
 contract CreateSmartCharacter is Script {
   using SmartCharacterLib for SmartCharacterLib.World;
@@ -32,6 +33,7 @@ contract CreateSmartCharacter is Script {
 
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
+
     SmartCharacterLib.World memory smartCharacter = SmartCharacterLib.World({
       iface: IBaseWorld(worldAddress),
       namespace: "frontier"
