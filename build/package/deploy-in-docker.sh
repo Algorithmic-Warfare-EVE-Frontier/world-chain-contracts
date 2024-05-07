@@ -32,6 +32,15 @@ show_progress() {
 }
 
 
+# Function to get chain ID from RPC URL
+get_chain_id() {
+    local rpc_url=$1
+    local chain_id_hex=$(curl -s -X POST --data '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}' -H "Content-Type: application/json" $rpc_url | jq -r '.result')
+     # Remove the '0x' prefix if present and convert hex to decimal
+    local chain_id_decimal=$(echo "$chain_id_hex" | sed 's/0x//')
+    echo "$((16#$chain_id_decimal))"
+}
+
 # Default values
 rpc_url=""
 private_key=""
@@ -60,10 +69,10 @@ while [ $# -gt 0 ]; do
 done
 
 
-## Temporarily hardcode private key and rpc url before adding them as params
-export RPC_URL="$rpc_url"
-export PRIVATE_KEY="$private_key"
-
+# Fetch and export the chain ID
+chain_id=$(get_chain_id "$rpc_url")
+wait
+echo "Using chain ID: $chain_id"
 
 show_progress 0 7
 
@@ -74,7 +83,7 @@ pnpm nx run @eve/frontier-standard-contracts:deploy 1> '/dev/null'
 wait
 show_progress 1 7
 
-export FORWARDER_ADDRESS=$(cat ./standard-contracts/broadcast/Deploy.s.sol/31337/run-latest.json | jq '.transactions|first|.contractAddress' | tr -d \") 
+export FORWARDER_ADDRESS=$(cat ./standard-contracts/broadcast/Deploy.s.sol/$chain_id/run-latest.json | jq '.transactions|first|.contractAddress' | tr -d \") 
 
 #2 Deploy the world core
 #
@@ -87,7 +96,7 @@ if [ -z "$world_address" ]; then
     pnpm nx deploy @eve/frontier-world-core 1> '/dev/null'
     wait
     show_progress 2 7
-    world_address=$(cat ./mud-contracts/core/deploys/31337/latest.json | jq '.worldAddress' | tr -d \")
+    world_address=$(cat ./mud-contracts/core/deploys/$chain_id/latest.json | jq '.worldAddress' | tr -d \")
     export WORLD_ADDRESS="$world_address"
 else
     # If set, use that value
