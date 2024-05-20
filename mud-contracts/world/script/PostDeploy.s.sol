@@ -22,11 +22,18 @@ import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src
 import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/EntityCore.sol";
 import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
+import { HookType } from "@eveworld/smart-object-framework/src/types.sol";
 
 import { ModulesInitializationLibrary } from "../src/utils/ModulesInitializationLibrary.sol";
 import { SOFInitializationLibrary } from "../src/utils/SOFInitializationLibrary.sol";
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 
+import { Utils as GateKeeperUtils } from "../src/modules/gate-keeper/Utils.sol";
+import { Utils as InventoryUtils } from "../src/modules/inventory/Utils.sol";
+
+import { IGateKeeper } from "../src/modules/gate-keeper/interfaces/IGateKeeper.sol";
+import { IInventory } from "../src/modules/inventory/interfaces/IInventory.sol";
+import { IInventoryInteract } from "../src/modules/inventory/interfaces/IInventoryInteract.sol";
 import { EntityRecordModule } from "../src/modules/entity-record/EntityRecordModule.sol";
 import { StaticDataModule } from "../src/modules/static-data/StaticDataModule.sol";
 import { LocationModule } from "../src/modules/location/LocationModule.sol";
@@ -42,7 +49,7 @@ import { Inventory } from "../src/modules/inventory/systems/Inventory.sol";
 import { EphemeralInventory } from "../src/modules/inventory/systems/EphemeralInventory.sol";
 import { InventoryInteract } from "../src/modules/inventory/systems/InventoryInteract.sol";
 
-import { OBJECT, CLASS, SMART_CHARACTER_CLASS_ID, SMART_DEPLOYABLE_CLASS_ID, SSU_CLASS_ID, GATE_KEEPER_CLASS_ID, SMART_DEPLOYABLE_FRONTIER_TYPE_ID} from "../src/utils/ModulesInitializationLibrary.sol";
+import { OBJECT, CLASS, SMART_CHARACTER_CLASS_ID, SMART_DEPLOYABLE_CLASS_ID, SSU_CLASS_ID, GATE_KEEPER_CLASS_ID, SMART_DEPLOYABLE_FRONTIER_TYPE_ID } from "../src/utils/ModulesInitializationLibrary.sol";
 
 contract PostDeploy is Script {
   using ModulesInitializationLibrary for IBaseWorld;
@@ -50,6 +57,8 @@ contract PostDeploy is Script {
   using SmartObjectLib for SmartObjectLib.World;
   using SmartCharacterLib for SmartCharacterLib.World;
   using SmartDeployableLib for SmartDeployableLib.World;
+  using GateKeeperUtils for bytes14;
+  using InventoryUtils for bytes14;
 
   IBaseWorld world;
   SmartObjectLib.World smartObject;
@@ -123,6 +132,8 @@ contract PostDeploy is Script {
 
     uint256 smartDeplFrontierClassId = world.registerAndAssociateTypeIdToSSU(SMART_DEPLOYABLE_FRONTIER_TYPE_ID);
     console.log("Smart Deployable (Frontier TypeId: 77917) - classId: ", smartDeplFrontierClassId);
+
+    _registerClassLevelHookGateKeeper();
   }
 
   function _installPuppet(address deployer) internal {
@@ -200,5 +211,30 @@ contract PostDeploy is Script {
     SmartDeployableLib
       .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
       .globalResume();
+  }
+
+  function _registerClassLevelHookGateKeeper() internal {
+    ResourceId gateKeeperSystemId = GATE_KEEPER_DEPLOYMENT_NAMESPACE.gateKeeperSystemId();
+    ResourceId inventoryInteractSystemId = INVENTORY_DEPLOYMENT_NAMESPACE.inventoryInteractSystemId();
+    ResourceId inventorySystemId = INVENTORY_DEPLOYMENT_NAMESPACE.inventorySystemId();
+
+    smartObject.registerHook(gateKeeperSystemId, IGateKeeper.depositToInventoryHook.selector);
+    uint256 depositHookId = uint256(
+      keccak256(abi.encodePacked(gateKeeperSystemId, IGateKeeper.depositToInventoryHook.selector))
+    );
+    smartObject.associateHook(GATE_KEEPER_CLASS_ID, depositHookId);
+    smartObject.addHook(depositHookId, HookType.BEFORE, inventorySystemId, IInventory.depositToInventory.selector);
+
+    smartObject.registerHook(gateKeeperSystemId, IGateKeeper.ephemeralToInventoryTransferHook.selector);
+    uint256 transferHookId = uint256(
+      keccak256(abi.encodePacked(gateKeeperSystemId, IGateKeeper.ephemeralToInventoryTransferHook.selector))
+    );
+    smartObject.associateHook(GATE_KEEPER_CLASS_ID, transferHookId);
+    smartObject.addHook(
+      transferHookId,
+      HookType.BEFORE,
+      inventoryInteractSystemId,
+      IInventoryInteract.ephemeralToInventoryTransfer.selector
+    );
   }
 }
