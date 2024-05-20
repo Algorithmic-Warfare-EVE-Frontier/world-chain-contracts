@@ -8,9 +8,6 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 
 import "@eveworld/common-constants/src/constants.sol";
-// npm package doesnt exist yet
-bytes14 constant GATE_KEEPER_DEPLOYMENT_NAMESPACE = "eveworld";
-
 
 import { Utils as EntityRecordUtils } from "../modules/entity-record/Utils.sol";
 import { ENTITY_RECORD_MODULE_NAME } from "../modules/entity-record/constants.sol";
