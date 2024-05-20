@@ -28,10 +28,6 @@ import { GATE_KEEPER_MODULE_NAME } from "../modules/gate-keeper/constants.sol";
 
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 
-//Constants for Entity
-uint8 constant OBJECT = 1;
-uint8 constant CLASS = 2;
-
 // placeholder values
 uint256 constant SMART_CHARACTER_CLASS_ID = 123456;
 uint256 constant SMART_DEPLOYABLE_CLASS_ID = 1337;
