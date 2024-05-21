@@ -33,6 +33,7 @@ uint256 constant SMART_CHARACTER_CLASS_ID = 123456;
 uint256 constant SMART_DEPLOYABLE_CLASS_ID = 1337;
 uint256 constant SSU_CLASS_ID = 5103412;
 uint256 constant GATE_KEEPER_CLASS_ID = 1234;
+uint256 constant ITEM_SELLER_CLASS_ID = 2345;
 
 //actual in-game value
 uint256 constant SMART_DEPLOYABLE_FRONTIER_TYPE_ID = 77917;
